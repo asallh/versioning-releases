@@ -10,6 +10,9 @@ export default function Home() {
         <div className="text-center text-9xl">
           MAJOR CHANGE
         </div>
+        <div className="text-center">
+          But now, a patch 🙏
+        </div>
     </div>
   );
 }
