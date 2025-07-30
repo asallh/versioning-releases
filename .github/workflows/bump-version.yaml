@@ -53,26 +53,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get previous and current tag + generate changelog
+      - name: Get previous and current tag + generate PR changelog
         if: steps.release_type.outputs.skip != 'true'
         id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get latest and previous tags
           NEW_TAG=$(git describe --tags --abbrev=0)
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^)
 
           echo "prev=$PREV_TAG" >> $GITHUB_OUTPUT
           echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-          echo "Generating changelog from $PREV_TAG to $NEW_TAG..."
+          echo "Generating PR changelog from $PREV_TAG to $NEW_TAG..."
 
-          # Format changelog
-          LOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s by %an")
+          # Get merged PRs from main between previous and current tag
+          PRS=$(gh pr list --state merged --base main --search "$PREV_TAG..$NEW_TAG" --json title,number,url,author --limit 100)
+
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '.[] | "- [#\(.number)](\(.url)) \(.title) (@\(.author.login))"' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release with Custom Changelog
+      - name: Create GitHub Release with Custom PR List
         if: steps.release_type.outputs.skip != 'true'
         uses: softprops/action-gh-release@v1
         with:
