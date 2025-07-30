@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Ghost } from "react-kawaii";
 
 export default function Home() {
@@ -9,7 +8,7 @@ export default function Home() {
         <Ghost size={200} mood="blissful" color="#515AC6" />
       </div>
         <div className="text-center">
-          Adding something important to this project.
+          This is now techically a minor change.
         </div>
     </div>
   );
