@@ -8,6 +8,9 @@ export default function Home() {
         <p className="mb-4 text-lg font-semibold">Branch: Dev</p>
         <Ghost size={200} mood="blissful" color="#515AC6" />
       </div>
+        <div className="text-center">
+          Adding something important to this project.
+        </div>
     </div>
   );
 }

@@ -1,0 +1,42 @@
+name: Bump Version on QA Merge
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  bump-version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine release type from labels
+        id: release_type
+        run: |
+          RELEASE_TYPE=""
+
+          for label in $(echo "${{ toJSON(github.event.pull_request.labels) }}" | jq -r '.[].name'); do
+            if [[ "$label" == "major" || "$label" == "minor" || "$label" == "patch" ]]; then
+              RELEASE_TYPE=$label
+              break
+            fi
+          done
+
+          if [ -z "$RELEASE_TYPE" ]; then
+            echo "No valid release label found. Exiting..."
+            exit 1
+          fi
+
+          echo "type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        uses: phips28/gh-action-bump-version@v10.1.1
+        with:
+          tag-prefix: 'v'
+          version-type: ${{ steps.release_type.outputs.type }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
