@@ -8,7 +8,7 @@ export default function Home() {
         <Ghost size={200} mood="blissful" color="#515AC6" />
       </div>
         <div className="text-center">
-          This is now techically a minor change.
+          This is now techically a minor change. Oops i meant a patch.
         </div>
     </div>
   );
