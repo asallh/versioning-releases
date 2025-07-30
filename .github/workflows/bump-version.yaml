@@ -3,49 +3,61 @@ name: Bump Version on QA Merge
 on:
   pull_request:
     branches:
-      - main
+      - main # This workflow triggers when a PR is closed (and merged) into the 'main' branch
     types: [closed]
 
 jobs:
   bump-version:
+    # This job only runs if the pull request was successfully merged
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: read
+      contents: write # Required for the bump-version action to create tags and commit changes
+      pull-requests: read # Required to read labels from the pull request event
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          fetch-depth: 0 # Fetch entire history for accurate version determination by the action
+
+      - name: Install jq # jq is required to parse the PR labels from the JSON payload
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Determine release type from labels
-        id: release_type
+        id: release_type # This step's outputs can be referenced by subsequent steps
         run: |
           RELEASE_TYPE=""
+          echo "Checking PR labels for version type..."
+          PR_LABELS="${{ toJSON(github.event.pull_request.labels) }}"
+          echo "Found labels: $PR_LABELS"
 
-          for label in $(echo "${{ toJSON(github.event.pull_request.labels) }}" | jq -r '.[].name'); do
+          # Loop through PR labels to find 'major', 'minor', or 'patch'
+          for label in $(echo "$PR_LABELS" | jq -r '.[].name'); do
             if [[ "$label" == "major" || "$label" == "minor" || "$label" == "patch" ]]; then
               RELEASE_TYPE=$label
-              break
+              break # Stop once a valid release type label is found
             fi
           done
 
+          # If no valid release label is found, set skip to true and exit gracefully
           if [ -z "$RELEASE_TYPE" ]; then
-            echo "::warning::No valid release label (major/minor/patch) found. Skipping version bump."
-            echo "skip=true" >> $GITHUB_OUTPUT
-            exit 0
+            echo "::warning::No valid release label (major/minor/patch) found on the merged PR. Skipping version bump."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0 # Exit with success as skipping is an intended path
+          else
+            echo "Determined release type: $RELEASE_TYPE"
+            echo "type=$RELEASE_TYPE" >> "$GITHUB_OUTPUT" # Output the determined type
+            echo "skip=false" >> "$GITHUB_OUTPUT" # Output to indicate not to skip
           fi
 
-          echo "type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
-          echo "skip=false" >> $GITHUB_OUTPUT
-
       - name: Bump version
+        # This step only runs if a release type was successfully determined (i.e., not skipped)
         if: steps.release_type.outputs.skip != 'true'
-        uses: phips28/gh-action-bump-version@v10.1.1
+        uses: phips28/gh-action-bump-version@v10.1.1 # Using a specific stable version of the action
         with:
-          tag-prefix: 'v'
-          version-type: ${{ steps.release_type.outputs.type }}
+          tag-prefix: 'v' # Add 'v' prefix to the new tag (e.g., v1.0.0)
+          version-type: ${{ steps.release_type.outputs.type }} # Use the determined version type (major, minor, or patch)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # The GITHUB_TOKEN is required by the action to push changes and tags
