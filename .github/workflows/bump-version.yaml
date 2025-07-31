@@ -70,8 +70,15 @@ jobs:
           # Get merged PRs from main between previous and current tag
           PRS=$(gh pr list --state merged --base main --search "$PREV_TAG..$NEW_TAG" --json title,number,url,author --limit 100)
 
+          # Get commit messages between tags
+          COMMITS=$(git log $PREV_TAG..$NEW_TAG --pretty=format:"- %s (%an)")
+
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "### Merged Pull Requests:" >> $GITHUB_OUTPUT
           echo "$PRS" | jq -r '.[] | "- [#\(.number)](\(.url)) \(.title) (@\(.author.login))"' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### Commits:" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release with Custom PR List
