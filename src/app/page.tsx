@@ -11,7 +11,7 @@ export default function Home() {
           MAJOR CHANGE
         </div>
         <div className="text-center">
-          But now, a patch 🙏
+          Creating a small change for Changelog generation
         </div>
     </div>
   );
