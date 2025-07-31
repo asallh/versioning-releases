@@ -5,13 +5,10 @@ export default function Home() {
     <div className="min-h-screen flex flex-col justify-center items-center">
       <div className="text-center">
         <p className="mb-4 text-lg font-semibold">Branch: Dev</p>
-        <Ghost size={200} mood="shocked" color="#A20100" />
+        <Ghost size={200} mood="shocked" color="#FEE56D" />
       </div>
-        <div className="text-center text-9xl">
-          MAJOR CHANGE
-        </div>
-        <div className="text-center">
-          Creating a small change for Changelog generation
+        <div className="text-center text-xl">
+          Did the changelog work?
         </div>
     </div>
   );
