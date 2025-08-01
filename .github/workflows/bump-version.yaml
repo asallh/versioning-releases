@@ -9,8 +9,7 @@ on:
 jobs:
   bump-version:
     if: >
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true
+      (github.event_name == 'pull_request' && github.event.action == 'closed' &&  github.event.pull_request.merged == true) || (github.event_name == 'push')
     runs-on: ubuntu-latest
     permissions:
       contents: write
