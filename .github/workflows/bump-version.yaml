@@ -73,34 +73,28 @@ jobs:
           echo "prev=$PREV_TAG" >> $GITHUB_OUTPUT
           echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-          echo "Generating PR changelog from $PREV_TAG to $NEW_TAG..."
-
-          # Get commit SHAs between tags
-          COMMITS=$(git log $PREV_TAG..$NEW_TAG --pretty=format:"%H")
-
-          # Find unique PR numbers from commit messages (e.g., "Merge pull request #123")
+          # Get PRs and commits
           PR_NUMBERS=$(git log $PREV_TAG..$NEW_TAG --pretty=format:"%s" | grep -oE "#[0-9]+" | tr -d "#" | sort -u)
-
-          # Fetch PR details
           PR_LIST=""
           for pr in $PR_NUMBERS; do
             PR_JSON=$(gh pr view $pr --json title,number,url,author --jq '"- [#\(.number)](\(.url)) \(.title) (@\(.author.login))"')
             PR_LIST="$PR_LIST$PR_JSON\n"
           done
 
-          # Get commit messages between tags
           COMMIT_LIST=$(git log $PREV_TAG..$NEW_TAG --pretty=format:"- %s (%an)")
 
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "### Merged Pull Requests:" >> $GITHUB_OUTPUT
+          echo "<details><summary>### Merged Pull Requests</summary>" >> $GITHUB_OUTPUT
           if [ -n "$PR_LIST" ]; then
             echo -e "$PR_LIST" >> $GITHUB_OUTPUT
           else
             echo "_No PRs found for this release._" >> $GITHUB_OUTPUT
           fi
+          echo "</details>" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
-          echo "### Commits:" >> $GITHUB_OUTPUT
+          echo "<details><summary>### Commits</summary>" >> $GITHUB_OUTPUT
           echo "$COMMIT_LIST" >> $GITHUB_OUTPUT
+          echo "</details>" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release with Custom PR List
