@@ -50,6 +50,7 @@ jobs:
 
             echo "type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
             echo "skip=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Bump version
         if: steps.release_type.outputs.skip != 'true'
