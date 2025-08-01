@@ -5,6 +5,9 @@ on:
     branches:
       - main
     types: [closed]
+  push:
+    branches:
+      - main
 
 jobs:
   bump-version:
@@ -26,6 +29,8 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "push" ]]; then 
             RELEASE_TYPE="patch"
+            echo "type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+            echo "skip=false" >> $GITHUB_OUTPUT
           else
             echo '${{ toJSON(github.event.pull_request.labels) }}' > labels.json
             RELEASE_TYPE=""
