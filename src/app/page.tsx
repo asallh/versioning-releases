@@ -5,7 +5,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col justify-center items-center">
       <div className="text-center">
         <p className="mb-4 text-lg font-semibold">Branch: Dev</p>
-        <Ghost size={200} mood="shocked" color="#60D1FF" />
+        <Ghost size={200} mood="shocked" color="#FFC907" />
       </div>
         <div className="text-center text-xl">
           Testing non bump.
