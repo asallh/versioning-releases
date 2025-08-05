@@ -8,7 +8,7 @@ export default function Home() {
         <Ghost size={200} mood="shocked" color="#60D1FF" />
       </div>
         <div className="text-center text-xl">
-          Trying again.
+          Testing non bump.
         </div>
     </div>
   );
